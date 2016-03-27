@@ -41,7 +41,7 @@ class GameLoop:
         self.BGCOLOR = self.BLACK
         self.TEXTCOLOR = self.WHITE
         self.TEXTSHADOWCOLOR = self.GRAY
-        self.COLORS      = (     self.BLUE,      self.GREEN,      self.RED,      self.YELLOW)
+        self.COLORS = (self.BLUE,      self.GREEN,      self.RED,      self.YELLOW)
         self.LIGHTCOLORS = (self.LIGHTBLUE, self.LIGHTGREEN, self.LIGHTRED, self.LIGHTYELLOW)
         assert len(self.COLORS) == len(self.LIGHTCOLORS) # each color must have light color
 
@@ -49,26 +49,26 @@ class GameLoop:
         self.TEMPLATEHEIGHT = 5
 
         self.A_SHAPE_TEMPLATE = [['.....',
-                             '.....',
-                             '..OO.',
-                             '.....',
-                             '.....'],
-                            ['.....',
-                             '..O..',
-                             '..O..',
-                             '.....',
-                             '.....']]
+                                  '.....',
+                                  '..OO.',
+                                  '.....',
+                                  '.....'],
+                                 ['.....',
+                                  '..O..',
+                                  '..O..',
+                                  '.....',
+                                  '.....']]
 
         self.B_SHAPE_TEMPLATE = [['.....',
-                             '.....',
-                             '..O..',
-                             '..O..',
-                             '.....'],
-                            ['.....',
-                             '.....',
-                             '.OO..',
-                             '.....',
-                             '.....']]
+                                  '.....',
+                                  '..O..',
+                                  '..O..',
+                                  '.....'],
+                                 ['.....',
+                                  '.....',
+                                  '.OO..',
+                                  '.....',
+                                  '.....']]
 
         self.PIECES = {'A': self.A_SHAPE_TEMPLATE,
                        'B': self.B_SHAPE_TEMPLATE,}
@@ -285,7 +285,7 @@ class GameLoop:
         self.BIGFONT = pygame.font.Font('freesansbold.ttf', 50)
         pygame.display.set_caption('Teste Laboratório')
 
-        self.showTextScreen('Testando Tetris')
+        # self.showTextScreen('Testando Tetris')
         while True: # game loop
             self.runGame()
             self.showTextScreen('Game Over')

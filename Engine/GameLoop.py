@@ -10,68 +10,6 @@ from PPlay.gameimage import*
 class GameLoop:
     def __init__(self):
         self.__init_components__()
-        self.FPS = 25
-        self.WINDOWWIDTH = 640
-        self.WINDOWHEIGHT = 480
-        self.BOXSIZE = 15
-        self.BOARDWIDTH = 10
-        self.BOARDHEIGHT = 20
-        self.BLANK = '.'
-
-        self.MOVESIDEWAYSFREQ = 0.15
-        self.MOVEDOWNFREQ = 0.1
-
-        self.XMARGIN = int((self.WINDOWWIDTH - self.BOARDWIDTH * self.BOXSIZE) / 2)
-        self.TOPMARGIN = self.WINDOWHEIGHT - (self.BOARDHEIGHT * self.BOXSIZE) - 5
-
-        #               R    G    B
-        self.WHITE       = (255, 255, 255)
-        self.GRAY        = (185, 185, 185)
-        self.BLACK       = (  0,   0,   0)
-        self.RED         = (155,   0,   0)
-        self.LIGHTRED    = (175,  20,  20)
-        self.GREEN       = (  0, 155,   0)
-        self.LIGHTGREEN  = ( 20, 175,  20)
-        self.BLUE        = (  0,   0, 155)
-        self.LIGHTBLUE   = ( 20,  20, 175)
-        self.YELLOW      = (155, 155,   0)
-        self.LIGHTYELLOW = (175, 175,  20)
-
-        self.BORDERCOLOR = self.BLUE
-        self.BGCOLOR = self.BLACK
-        self.TEXTCOLOR = self.WHITE
-        self.TEXTSHADOWCOLOR = self.GRAY
-        self.COLORS = (self.BLUE,      self.GREEN,      self.RED,      self.YELLOW)
-        self.LIGHTCOLORS = (self.LIGHTBLUE, self.LIGHTGREEN, self.LIGHTRED, self.LIGHTYELLOW)
-        assert len(self.COLORS) == len(self.LIGHTCOLORS) # each color must have light color
-
-        self.TEMPLATEWIDTH = 5
-        self.TEMPLATEHEIGHT = 5
-
-        self.A_SHAPE_TEMPLATE = [['.....',
-                                  '.....',
-                                  '..OO.',
-                                  '.....',
-                                  '.....'],
-                                 ['.....',
-                                  '..O..',
-                                  '..O..',
-                                  '.....',
-                                  '.....']]
-
-        self.B_SHAPE_TEMPLATE = [['.....',
-                                  '.....',
-                                  '..O..',
-                                  '..O..',
-                                  '.....'],
-                                 ['.....',
-                                  '.....',
-                                  '.OO..',
-                                  '.....',
-                                  '.....']]
-
-        self.PIECES = {'A': self.A_SHAPE_TEMPLATE,
-                       'B': self.B_SHAPE_TEMPLATE,}
 
     #Initial Fucntions
     def __init_components__(self):
@@ -278,140 +216,12 @@ class GameLoop:
     #Private Functions Janela do Tetris
     def __draw_game_view__(self):
         self._mapa_som.sound.stop()
-        pygame.init()
-        self.FPSCLOCK = pygame.time.Clock()
-        self.DISPLAYSURF = pygame.display.set_mode((self.WINDOWWIDTH, self.WINDOWHEIGHT))
-        self.BASICFONT = pygame.font.Font('freesansbold.ttf', 18)
-        self.BIGFONT = pygame.font.Font('freesansbold.ttf', 50)
-        pygame.display.set_caption('Teste Laboratório')
+        self.runGame()
 
-        # self.showTextScreen('Testando Tetris')
-        while True: # game loop
-            self.runGame()
-            self.showTextScreen('Game Over')
 
+    #Here start gameLoop
     def runGame(self):
-        # setup variables for the start of the game
-        board = self.getBlankBoard()
-        lastMoveDownTime = time.time()
-        lastMoveSidewaysTime = time.time()
-        lastFallTime = time.time()
-        movingDown = False # note: there is no movingUp variable
-        movingLeft = False
-        movingRight = False
-        score = 0
-        level, fallFreq = self.calculateLevelAndFallFreq(score)
-
-        fallingPiece = self.getNewPiece()
-        nextPiece = self.getNewPiece()
-
-        while True: # game loop
-            if fallingPiece == None:
-                # No falling piece in play, so start a new piece at the top
-                fallingPiece = nextPiece
-                nextPiece = self.getNewPiece()
-                lastFallTime = time.time() # reset lastFallTime
-
-                if not self.isValidPosition(board, fallingPiece):
-                    return # can't fit a new piece on the board, so game over
-
-            self.checkForQuit()
-            for event in pygame.event.get(): # event handling loop
-                if event.type == KEYUP:
-                    if (event.key == K_p):
-                        # Pausing the game
-                        self.DISPLAYSURF.fill(self.BGCOLOR)
-                        pygame.mixer.music.stop()
-                        self.showTextScreen('Paused') # pause until a key press
-                        pygame.mixer.music.play(-1, 0.0)
-                        lastFallTime = time.time()
-                        lastMoveDownTime = time.time()
-                        lastMoveSidewaysTime = time.time()
-                    elif (event.key == K_LEFT or event.key == K_a):
-                        movingLeft = False
-                    elif (event.key == K_RIGHT or event.key == K_d):
-                        movingRight = False
-                    elif (event.key == K_DOWN or event.key == K_s):
-                        movingDown = False
-
-                elif event.type == KEYDOWN:
-                    # moving the piece sideways
-                    if (event.key == K_LEFT or event.key == K_a) and self.isValidPosition(board, fallingPiece, adjX=-1):
-                        fallingPiece['x'] -= 1
-                        movingLeft = True
-                        movingRight = False
-                        lastMoveSidewaysTime = time.time()
-
-                    elif (event.key == K_RIGHT or event.key == K_d) and self.isValidPosition(board, fallingPiece, adjX=1):
-                        fallingPiece['x'] += 1
-                        movingRight = True
-                        movingLeft = False
-                        lastMoveSidewaysTime = time.time()
-
-                    # rotating the piece (if there is room to rotate)
-                    elif (event.key == K_UP or event.key == K_w):
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(self.PIECES[fallingPiece['shape']])
-                        if not self.isValidPosition(board, fallingPiece):
-                            fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(self.PIECES[fallingPiece['shape']])
-                    elif (event.key == K_q): # rotate the other direction
-                        fallingPiece['rotation'] = (fallingPiece['rotation'] - 1) % len(self.PIECES[fallingPiece['shape']])
-                        if not self.isValidPosition(board, fallingPiece):
-                            fallingPiece['rotation'] = (fallingPiece['rotation'] + 1) % len(self.PIECES[fallingPiece['shape']])
-
-                    # making the piece fall faster with the down key
-                    elif (event.key == K_DOWN or event.key == K_s):
-                        movingDown = True
-                        if self.isValidPosition(board, fallingPiece, adjY=1):
-                            fallingPiece['y'] += 1
-                        lastMoveDownTime = time.time()
-
-                    # move the current piece all the way down
-                    elif event.key == K_SPACE:
-                        movingDown = False
-                        movingLeft = False
-                        movingRight = False
-                        for i in range(1, self.BOARDHEIGHT):
-                            if not self.isValidPosition(board, fallingPiece, adjY=i):
-                                break
-                        fallingPiece['y'] += i - 1
-
-            # handle moving the piece because of user input
-            if (movingLeft or movingRight) and time.time() - lastMoveSidewaysTime > self.MOVESIDEWAYSFREQ:
-                if movingLeft and self.isValidPosition(board, fallingPiece, adjX=-1):
-                    fallingPiece['x'] -= 1
-                elif movingRight and self.isValidPosition(board, fallingPiece, adjX=1):
-                    fallingPiece['x'] += 1
-                lastMoveSidewaysTime = time.time()
-
-            if movingDown and time.time() - lastMoveDownTime > self.MOVEDOWNFREQ and self.isValidPosition(board, fallingPiece, adjY=1):
-                fallingPiece['y'] += 1
-                lastMoveDownTime = time.time()
-
-            # let the piece fall if it is time to fall
-            if time.time() - lastFallTime > fallFreq:
-                # see if the piece has landed
-                if not self.isValidPosition(board, fallingPiece, adjY=1):
-                    # falling piece has landed, set it on the board
-                    self.addToBoard(board, fallingPiece)
-                    score += self.removeCompleteLines(board)
-                    level, fallFreq = self.calculateLevelAndFallFreq(score)
-                    fallingPiece = None
-                else:
-                    # piece did not land, just move the piece down
-                    fallingPiece['y'] += 1
-                    lastFallTime = time.time()
-
-            # drawing everything on the screen
-            self.DISPLAYSURF.fill(self.BGCOLOR)
-            self.drawBoard(board)
-            self.drawStatus(score, level)
-            self.drawNextPiece(nextPiece)
-            if fallingPiece != None:
-                self.drawPiece(fallingPiece)
-
-            pygame.display.update()
-            self.FPSCLOCK.tick(self.FPS)
-
+        print("soosidj")
 
     def makeTextObjs(self,text, font, color):
         surf = font.render(text, True, color)
@@ -574,6 +384,16 @@ class GameLoop:
             for y in range(self.BOARDHEIGHT):
                 self.drawBox(x, y, board[x][y])
 
+    def drawEnemyBoard(self,board):
+        # draw the border around the board
+        pygame.draw.rect(self.DISPLAYSURF, self.RED, (self.XMARGIN - 3, self.TOPMARGIN - 7, (self.BOARDWIDTH * self.BOXSIZE) + 8, (self.BOARDHEIGHT * self.BOXSIZE) + 8), 5)
+
+        # fill the background of the board
+        pygame.draw.rect(self.DISPLAYSURF, self.BGCOLOR, (self.XMARGIN, self.TOPMARGIN, self.BOXSIZE * self.BOARDWIDTH, self.BOXSIZE * self.BOARDHEIGHT))
+        # draw the individual boxes on the board
+        for x in range(self.BOARDWIDTH):
+            for y in range(self.BOARDHEIGHT):
+                self.drawBox(x, y, board[x][y])
 
     def drawStatus(self,score, level):
         # draw the score text
